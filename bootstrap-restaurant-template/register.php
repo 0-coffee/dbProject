@@ -139,13 +139,13 @@
 			}
 
 			if(empty($errors)){
-				$checkUser = $db->prepare("SELECT COUNT(*) FROM users WHERE username = :username");
+				$checkUser = $db->prepare("SELECT COUNT(*) FROM member WHERE username = :username");
 				$checkUser -> bindParam(':username', $username);
 				$checkUser -> execute();
 
 				if($checkUser->fetchColumn() > 0) $errors.= "使用者名稱已經被註冊\\n";
 
-				$checkEmail = $db->prepare("SELECT COUNT(*) FROM users WHERE email = :email");
+				$checkEmail = $db->prepare("SELECT COUNT(*) FROM member WHERE email = :email");
 				$checkEmail -> bindParam(':email', $email);
 				$checkEmail -> execute();
 
@@ -159,7 +159,7 @@
 				}
 
 				try {
-					$stmt = $db->prepare("INSERT INTO users (role, realname, email, tel, username, password) VALUES (:role, :realname, :email, :tel, :username, :password)");
+					$stmt = $db->prepare("INSERT INTO member (role, realname, email, tel, username, password) VALUES (:role, :realname, :email, :tel, :username, :password)");
 					$role = 'user';
 					$stmt->bindParam(':role', $role);
                     $stmt->bindParam(':realname', $realname);
