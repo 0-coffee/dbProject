@@ -159,9 +159,17 @@
 				}
 
 				try {
-					$stmt = $db->prepare("INSERT INTO member (role, realname, email, tel, username, password) VALUES (:role, :realname, :email, :tel, :username, :password)");
+                        // 查询数据库中最后一条记录的 ID
+                    $lastIdStmt = $db->prepare("SELECT ID FROM member ORDER BY ID DESC LIMIT 1");
+                    $lastIdStmt->execute();
+                    $lastId = $lastIdStmt->fetchColumn();
+
+                    // 新用户的 ID 是最后一条记录的 ID + 1
+                    $newId = $lastId + 1;
+					$stmt = $db->prepare("INSERT INTO member (role, ID, realname, email, tel, username, password) VALUES (:role, :ID, :realname, :email, :tel, :username, :password)");
 					$role = 'user';
 					$stmt->bindParam(':role', $role);
+                    $stmt->bindParam(':ID', $newId);
                     $stmt->bindParam(':realname', $realname);
                     $stmt->bindParam(':email', $email);
 					$stmt->bindParam(':tel', $tel);
@@ -195,7 +203,19 @@
                     <input type="text" name="realname" class="form-control border-0" placeholder="你的姓名" style="height: 55px;">
                 </div>
                 <div class="col-12 col-sm-6">
-                    <input type="email" name="email" class="form-control border-0" placeholder="你的 Email" style="height: 55px;">
+                    <input type="email" name="email" id="emailInput" class="form-control border-0" placeholder="你的 Email" style="height: 55px;">
+                    <!-- JavaScript code to automatically add "@gmail.com" -->
+                    <script>
+                        const emailInput = document.getElementById('emailInput');
+
+                        emailInput.addEventListener('input', function(event) {
+                            const email = event.target.value.trim();
+                            
+                            if (email.endsWith('@')) {
+                                event.target.value = email + 'gmail.com';
+                            }
+                        });
+                    </script>
                 </div>
                 <div class="col-12 col-sm-6">
                     <input type="text" name="tel" class="form-control border-0" placeholder="你的手機" style="height: 55px;">

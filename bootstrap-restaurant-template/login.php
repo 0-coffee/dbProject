@@ -83,11 +83,11 @@
     <?php
         session_start();
         if ($_SERVER['REQUEST_METHOD'] === "POST"){
-            include "database_connection.php";
+            include "db_connection.php";
             $username = $_POST['username']?? '';
             $password = $_POST['password']?? '';
 
-            $stmt = $db->prepare("SELECT * FROM users WHERE username = :username");
+            $stmt = $db->prepare("SELECT * FROM member WHERE username = :username");
             $stmt->bindParam(':username', $username);
             $stmt->execute();
 
@@ -96,15 +96,16 @@
             if ($user && password_verify($password, $user['password'])) {
                 $_SESSION['user_id'] = $user['ID']; 
                 $_SESSION['username'] = $user['username']; 
-                $_SESSION['userRealName'] = $user['userRealName']; 
+                $_SESSION['realname'] = $user['realname']; 
                 $_SESSION['role'] = $user['role'];
 
                 if($_SESSION['role'] == "admin"){
-                    header('Location: manageAccounts.php');
+                    header('Location: manageAccount.php');
                 } else {
-                    header('Location: organs.php'); 
+                    header('Location: myAccount.php'); 
                 }
-            
+                //login後頁面
+
                 exit;
             } else {
                 // 登入失敗以及錯誤訊息

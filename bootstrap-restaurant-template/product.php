@@ -80,97 +80,83 @@
         </div>
         <!-- Navbar & Hero End -->
 
-        <!-- Menu Start -->
-        <div class="container-xxl py-5">
-            <div class="container">
-                <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                    <h5 class="section-title ff-secondary text-center text-primary fw-normal">Food Menu</h5>
-                    <h1 class="mb-5">Most Popular Items</h1>
-                </div>
-                <div class="tab-class text-center wow fadeInUp" data-wow-delay="0.1s">
-                    <div class="tab-content">
-                        <div id="tab-1" class="tab-pane fade show p-0 active">
-                            <div class="row g-4">
-                                <div class="col-lg-6">
-                                    <div class="d-flex align-items-center">
-                                        <img class="flex-shrink-0 img-fluid rounded" src="img/menu-1.jpg" alt="" style="width: 80px;">
-                                        <div class="w-100 d-flex flex-column text-start ps-4">
-                                            <h5 class="d-flex justify-content-between border-bottom pb-2">
-                                                <span>Chicken Burger</span>
-                                                <span class="text-primary">$115</span>
-                                            </h5>
-                                            <small class="fst-italic">Ipsum ipsum clita erat amet dolor justo diam</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="d-flex align-items-center">
-                                        <img class="flex-shrink-0 img-fluid rounded" src="img/menu-2.jpg" alt="" style="width: 80px;">
-                                        <div class="w-100 d-flex flex-column text-start ps-4">
-                                            <h5 class="d-flex justify-content-between border-bottom pb-2">
-                                                <span>Chicken Burger</span>
-                                                <span class="text-primary">$115</span>
-                                            </h5>
-                                            <small class="fst-italic">Ipsum ipsum clita erat amet dolor justo diam</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="d-flex align-items-center">
-                                        <img class="flex-shrink-0 img-fluid rounded" src="img/menu-3.jpg" alt="" style="width: 80px;">
-                                        <div class="w-100 d-flex flex-column text-start ps-4">
-                                            <h5 class="d-flex justify-content-between border-bottom pb-2">
-                                                <span>Chicken Burger</span>
-                                                <span class="text-primary">$115</span>
-                                            </h5>
-                                            <small class="fst-italic">Ipsum ipsum clita erat amet dolor justo diam</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="d-flex align-items-center">
-                                        <img class="flex-shrink-0 img-fluid rounded" src="img/menu-4.jpg" alt="" style="width: 80px;">
-                                        <div class="w-100 d-flex flex-column text-start ps-4">
-                                            <h5 class="d-flex justify-content-between border-bottom pb-2">
-                                                <span>Chicken Burger</span>
-                                                <span class="text-primary">$115</span>
-                                            </h5>
-                                            <small class="fst-italic">Ipsum ipsum clita erat amet dolor justo diam</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="d-flex align-items-center">
-                                        <img class="flex-shrink-0 img-fluid rounded" src="img/menu-5.jpg" alt="" style="width: 80px;">
-                                        <div class="w-100 d-flex flex-column text-start ps-4">
-                                            <h5 class="d-flex justify-content-between border-bottom pb-2">
-                                                <span>Chicken Burger</span>
-                                                <span class="text-primary">$115</span>
-                                            </h5>
-                                            <small class="fst-italic">Ipsum ipsum clita erat amet dolor justo diam</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="d-flex align-items-center">
-                                        <img class="flex-shrink-0 img-fluid rounded" src="img/menu-6.jpg" alt="" style="width: 80px;">
-                                        <div class="w-100 d-flex flex-column text-start ps-4">
-                                            <h5 class="d-flex justify-content-between border-bottom pb-2">
-                                                <span>Chicken Burger</span>
-                                                <span class="text-primary">$115</span>
-                                            </h5>
-                                            <small class="fst-italic">Ipsum ipsum clita erat amet dolor justo diam</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Menu End -->
+        <?php
+        session_start();
+
+        // 處理越權查看以及錯誤登入
+        if (!isset($_SESSION['username'])) {
+            echo "<script>alert('偵測到未登入'); window.location.href = 'login.php';</script>";
+            exit();
+        } else if ($_SESSION['role'] != "admin") {
+            echo "<script>alert('無權訪問'); window.location.href = 'logout.php';</script>";
+            exit();
+        }
+        
+        // 處理管理員調出使用者清單
+        include "database_connection.php";
+        $stmt = $db->prepare("SELECT * FROM `member`");
+        $stmt->execute();
+        
+        $html = "<table><tr><th>ID</th><th>身分組</th><th>使用者姓名</th><th>使用者名稱</th><th>血型</th><th>生日</th></tr>";
+        while ($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $html .= "<tr>";
+            $html .= "<td>" . htmlspecialchars($user['ID']) . "</td>";
+            $html .= "<td>" . htmlspecialchars($user['role']) . "</td>";
+            $html .= "<td>" . htmlspecialchars($user['realname']) . "</td>";
+            $html .= "<td>" . htmlspecialchars($user['username']) . "</td>";
+            $html .= "<td>" . htmlspecialchars($user['birth']) . "</td>";
+            $html .= "<td><form action=\"manageAccounts.php\" method=\"post\" onsubmit=\"return confirmDelete();\">". ((($user['role'] === "admin")||($user['role'] === "root")) ? "" : "<input type=\"hidden\" name=\"deleteID\" value=\"".$user['ID']."\"><button type=\"submit\" style=\"background-color: #ff4d4d; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; transition: background 0.3s ease;\">刪除使用者</button></form></td>");
+            $html .= "</tr>";
+        }
+        $html .= "</table>";
+    ?>
+    <?php
+        if (($_SERVER['REQUEST_METHOD'] === "POST")&&(isset($_POST['deleteID']))){
+            include "database_connection.php";
+            $deleteUserID = $_POST['deleteID'];
+            $stmt = $db -> prepare("DELETE FROM `member` WHERE ID = :deleteID");
+            $stmt->bindParam(':deleteID', $deleteUserID);
+            $stmt->execute();
+            header("location: manageAccounts.php");
+        }
+    ?>
+    <style>
+        table {
+            width: 100%;        /* 表格寬度佔滿父元素 */
+            border-collapse: collapse; /* 邊框合併為單一邊框 */
+            margin: 20px 0;     /* 上下邊距為 20px，左右為 0 */
+            font-family: Arial, sans-serif; /* 使用 Arial 或無襯線字體 */
+            color: #333;        /* 字體顏色 */
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1); /* 輕微陰影效果 */
+            background-color: #ffffff; /* 白色背景 */
+        }
+
+        /* 表格標頭 */
+        th {
+            background-color: #f2f2f2; /* 標頭背景顏色 */
+            color: #333;        /* 標頭文字顏色 */
+            font-weight: bold;  /* 粗體文字 */
+            padding: 12px 15px; /* 內距 */
+            text-align: left;   /* 文字對齊 */
+        }
+
+        /* 表格行與單元格 */
+        tr {
+            border-bottom: 1px solid #ddd; /* 行底部邊框 */
+        }
+
+        td {
+            padding: 12px 15px; /* 單元格內距 */
+            text-align: left;   /* 文字對齊 */
+        }
+
+        /* 滑過行變色效果 */
+        tr:hover {
+            background-color: #f5f5f5; /* 滑過時的背景顏色 */
+        }
+
+    </style>
+</head>
         
 
     <!-- Footer Start -->
