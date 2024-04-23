@@ -92,19 +92,17 @@
 				die("CSRF token validation failed");
 			}
 
-			$userRealName = $_POST['userRealName']?? '';
+			$realname = $_POST['realname']?? '';
             $email = $_POST['email'] ?? '';
-            $phoneNumber = $_POST['phoneNumber']?? '';
-            $bloodType = $_POST['bloodType']?? '';
-            $birthday = $_POST['birthday']?? '';
+            $tel = $_POST['tel']?? '';
             $username = $_POST['username']?? '';
 			$password = $_POST['password'] ?? '';
 			$confirmPassword = $_POST['confirmPassword'] ?? '';
 			
 			$errors = '';
-            if (empty($userRealName)) {
+            if (empty($realname)) {
 				$errors .= "使用者姓名不得為空\\n";
-			} else if (strlen($userRealName) < 2 || strlen($userRealName) > 20) {
+			} else if (strlen($realname) < 2 || strlen($realname) > 20) {
 				$errors .= "使用者姓名的長度必須至少2個字元且少於20個字元\\n";
 			}
 			
@@ -114,18 +112,11 @@
 				$errors .= "電子郵箱的長度必須至少4個字元且少於50個字元\\n";
 			}
 
-            if (empty($phoneNumber)) {
+            if (empty($tel)) {
 				$errors .= "手機號碼不得為空\\n";
-			} else if (strlen($phoneNumber) != 10) {
+			} else if (strlen($tel) != 10) {
 				$errors .= "手機號碼的長度必須等於10個字元\\n";
 			}
-
-            if ($bloodType == "你的血型")
-				$errors .= "未選擇血型，請選擇血型\\n";
-
-            if (empty($birthday)) { //證實生日的格式
-                $errors .= "生日錯誤，你不可能在今天或或是未來出生\\n";
-            } 
 
             if (empty($username)) {
 				$errors .= "使用者名稱不得為空\\n";
@@ -160,27 +151,20 @@
 
 				if($checkEmail->fetchColumn() > 0) $errors.= "電子郵箱已經被註冊\\n";
 			}
-
-            //echo "<script>alert('+$role+'\n'+$userRealName+'\n'+$email+'\n'+$phoneNumber+'\n'+$bloodType+'\n'+$birthday+'\n'+$username +'\n'+ $password+');</script>";
 			
 			if (!empty($errors)) echo "<script>alert('$errors');</script>";
 			else {
 				if (!empty($password)&&(strlen($password)>=4)&&(strlen($password)<=50)) {
 					$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                    // echo "<script>
-					// 		alert('密碼加密');
-					// 	</script>";
 				}
 
 				try {
-					$stmt = $db->prepare("INSERT INTO users (role, userRealName, email, phoneNumber, bloodType, birthday, username, password) VALUES (:role, :userRealName, :email, :phoneNumber, :bloodType, :birthday, :username, :password)");
+					$stmt = $db->prepare("INSERT INTO users (role, realname, email, tel, username, password) VALUES (:role, :realname, :email, :tel, :username, :password)");
 					$role = 'user';
 					$stmt->bindParam(':role', $role);
-                    $stmt->bindParam(':userRealName', $userRealName);
+                    $stmt->bindParam(':realname', $realname);
                     $stmt->bindParam(':email', $email);
-					$stmt->bindParam(':phoneNumber', $phoneNumber);
-					$stmt->bindParam(':bloodType', $bloodType);
-                    $stmt->bindParam(':birthday', $birthday);
+					$stmt->bindParam(':tel', $tel);
                     $stmt->bindParam(':username', $username);
 					$stmt->bindParam(':password', $hashedPassword);
 					$stmt->execute();
@@ -203,35 +187,18 @@
 <body>
     <div>
     <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.5s">
-    <!-- <h1 class="mb-4">註冊新帳號</h1> -->
     <div class="bg-light rounded h-100 d-flex align-items-center p-5">
         <form action="register.php" method="post" autocomplete="off">
             <div class="row g-3">
                 <h1 class="mb-4">註冊新帳號</h1>
                 <div class="col-12 col-sm-6">
-                    <input type="text" name="userRealName" class="form-control border-0" placeholder="你的姓名" style="height: 55px;">
+                    <input type="text" name="realname" class="form-control border-0" placeholder="你的姓名" style="height: 55px;">
                 </div>
                 <div class="col-12 col-sm-6">
                     <input type="email" name="email" class="form-control border-0" placeholder="你的 Email" style="height: 55px;">
                 </div>
                 <div class="col-12 col-sm-6">
-                    <input type="text" name="phoneNumber" class="form-control border-0" placeholder="你的手機" style="height: 55px;">
-                </div>
-                <div class="col-12 col-sm-6">
-                    <select name="bloodType" class="form-select border-0" style="height: 55px;">
-                        <option selected>你的血型</option>
-                        <option value="A">A型</option>
-                        <option value="B">B型</option>
-                        <option value="AB">AB型</option>
-                        <option value="O">O型</option>
-                        <option value="other">其他特殊血型</option>
-                    </select>
-                </div>
-                <div class="col-12 col-sm-6">
-                    <div class="date" id="date" data-target-input="nearest">
-                        <input type="date" value ="<?php echo date('Y-m-d') ?>" style="height: 55px;">
-                        <!-- style="width:231px;" -->
-                    </div>
+                    <input type="text" name="tel" class="form-control border-0" placeholder="你的手機" style="height: 55px;">
                 </div>
                 <div class="col-12 col-sm-6">
                     <input type="text" name="username" class="form-control border-0" placeholder="使用者名稱" style="height: 55px;">
