@@ -43,18 +43,16 @@
         
         // 處理管理員調出使用者清單
         include "db_connection.php";
-        $stmt = $db->prepare("SELECT * FROM `member`");
+        $stmt = $db->prepare("SELECT * FROM `product`");
         $stmt->execute();
         
-        $html = "<table><tr><th>ID</th><th>身分組</th><th>使用者姓名</th><th>使用者名稱</th><th>電郵</th></tr>";
+        $html = "<table><tr><th>ID</th><th>商品名稱</th><th>價格</th></tr>";
         while ($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $html .= "<tr>";
             $html .= "<td>" . htmlspecialchars($user['ID']) . "</td>";
-            $html .= "<td>" . htmlspecialchars($user['role']) . "</td>";
-            $html .= "<td>" . htmlspecialchars($user['realname']) . "</td>";
-            $html .= "<td>" . htmlspecialchars($user['username']) . "</td>";
-            $html .= "<td>" . htmlspecialchars($user['email']) . "</td>";
-            $html .= "<td><form action=\"manageAccount.php\" method=\"post\" onsubmit=\"return confirmDelete();\">". ((($user['role'] === "admin")||($user['role'] === "root")) ? "" : "<input type=\"hidden\" name=\"deleteID\" value=\"".$user['ID']."\"><button type=\"submit\" style=\"background-color: #ff4d4d; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; transition: background 0.3s ease;\">刪除使用者</button></form></td>");
+            $html .= "<td>" . htmlspecialchars($user['product_name']) . "</td>";
+            $html .= "<td>" . htmlspecialchars($user['price']) . "</td>";
+            $html .= "<td><form action=\"product.php\" method=\"post\" onsubmit=\"return confirmDelete();\">". ((($user['role'] === "admin")||($user['role'] === "root")) ? "" : "<input type=\"hidden\" name=\"deleteID\" value=\"".$user['ID']."\"><button type=\"submit\" style=\"background-color: #ff4d4d; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; transition: background 0.3s ease;\">刪除商品</button></form></td>");
             $html .= "</tr>";
         }
         $html .= "</table>";
@@ -63,10 +61,10 @@
         if (($_SERVER['REQUEST_METHOD'] === "POST")&&(isset($_POST['deleteID']))){
             include "db_connection.php";
             $deleteUserID = $_POST['deleteID'];
-            $stmt = $db -> prepare("DELETE FROM `member` WHERE ID = :deleteID");
+            $stmt = $db -> prepare("DELETE FROM `product` WHERE ID = :deleteID");
             $stmt->bindParam(':deleteID', $deleteUserID);
             $stmt->execute();
-            header("location: manageAccount.php");
+            header("location: product.php");
         }
     ?>
     <style>

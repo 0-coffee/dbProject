@@ -130,12 +130,17 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto py-0 pe-4">
+                    <?php
+                        // 检查用户角色并生成相应的链接
+                        if(isset($_SESSION['role']) && $_SESSION['role'] == "admin") {
+                            echo '<a href="manageProduct.php" class="nav-item nav-link">管理商品</a>';
+                            echo '<a href="manageAccount.php" class="nav-item nav-link">管理帳號</a>';
+                        }
+                    ?>
                         <div class="navbar-nav ms-auto p-4 p-lg-0">
                             <a href="myAccount.php" class="nav-item nav-link active"><?php echo "歡迎，". $_SESSION['username'];?></a>
                         </div>
                     </div>
-                    <a href="product.php" class="btn btn-primary py-2 px-4">開始下單</a>
-
                 </div>
             </nav>
 
