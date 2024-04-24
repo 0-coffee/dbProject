@@ -30,59 +30,8 @@
 
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
-</head>
-
-<body>
-    <div class="container-xxl bg-white p-0">
-        <!-- Spinner Start -->
-        <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
-        </div>
-        <!-- Spinner End -->
-
-
-        <!-- Navbar & Hero Start -->
-        <div class="container-xxl position-relative p-0">
-            <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
-                <a href="" class="navbar-brand p-0">
-                    <h1 class="text-primary m-0"><i class="fa fa-utensils me-3"></i>丹尼斯的貓薄荷</h1>
-                    <!-- <img src="img/logo.png" alt="Logo"> -->
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
-                    <span class="fa fa-bars"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarCollapse">
-                    <div class="navbar-nav ms-auto py-0 pe-4">
-                        <a href="index.php" class="nav-item nav-link active">主頁</a>
-                        <a href="about.php" class="nav-item nav-link">關於</a>
-                        <a href="login.php" class="nav-item nav-link">login</a>
-                    </div>
-                    <a href="product.php" class="btn btn-primary py-2 px-4">開始下單</a>
-
-                </div>
-            </nav>
-
-            <div class="container-xxl py-5 bg-dark hero-header mb-5">
-                <div class="container my-5 py-5">
-                    <div class="row align-items-center g-5">
-                        <div class="col-lg-6 text-center text-lg-start">
-                            <h1 class="display-3 text-white animated slideInLeft">享用我們的<br>神奇小植物</h1>
-                            <p class="text-white animated slideInLeft mb-4 pb-2">神奇的小G8話</p>
-                        </div>
-                        <div class="col-lg-6 text-center text-lg-end overflow-hidden">
-                            <img class="img-fluid" src="var/www/html/dbProject/bootstrap-restaurant-template/img/cannabis_leaves_logo.png.png" alt="">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Navbar & Hero End -->
-
-        <?php
+    <?php
         session_start();
-
         // 處理越權查看以及錯誤登入
         if (!isset($_SESSION['username'])) {
             echo "<script>alert('偵測到未登入'); window.location.href = 'login.php';</script>";
@@ -93,31 +42,31 @@
         }
         
         // 處理管理員調出使用者清單
-        include "database_connection.php";
+        include "db_connection.php";
         $stmt = $db->prepare("SELECT * FROM `member`");
         $stmt->execute();
         
-        $html = "<table><tr><th>ID</th><th>身分組</th><th>使用者姓名</th><th>使用者名稱</th><th>血型</th><th>生日</th></tr>";
+        $html = "<table><tr><th>ID</th><th>身分組</th><th>使用者姓名</th><th>使用者名稱</th><th>電郵</th></tr>";
         while ($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $html .= "<tr>";
             $html .= "<td>" . htmlspecialchars($user['ID']) . "</td>";
             $html .= "<td>" . htmlspecialchars($user['role']) . "</td>";
             $html .= "<td>" . htmlspecialchars($user['realname']) . "</td>";
             $html .= "<td>" . htmlspecialchars($user['username']) . "</td>";
-            $html .= "<td>" . htmlspecialchars($user['birth']) . "</td>";
-            $html .= "<td><form action=\"manageAccounts.php\" method=\"post\" onsubmit=\"return confirmDelete();\">". ((($user['role'] === "admin")||($user['role'] === "root")) ? "" : "<input type=\"hidden\" name=\"deleteID\" value=\"".$user['ID']."\"><button type=\"submit\" style=\"background-color: #ff4d4d; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; transition: background 0.3s ease;\">刪除使用者</button></form></td>");
+            $html .= "<td>" . htmlspecialchars($user['email']) . "</td>";
+            $html .= "<td><form action=\"manageAccount.php\" method=\"post\" onsubmit=\"return confirmDelete();\">". ((($user['role'] === "admin")||($user['role'] === "root")) ? "" : "<input type=\"hidden\" name=\"deleteID\" value=\"".$user['ID']."\"><button type=\"submit\" style=\"background-color: #ff4d4d; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; transition: background 0.3s ease;\">刪除使用者</button></form></td>");
             $html .= "</tr>";
         }
         $html .= "</table>";
     ?>
     <?php
         if (($_SERVER['REQUEST_METHOD'] === "POST")&&(isset($_POST['deleteID']))){
-            include "database_connection.php";
+            include "db_connection.php";
             $deleteUserID = $_POST['deleteID'];
             $stmt = $db -> prepare("DELETE FROM `member` WHERE ID = :deleteID");
             $stmt->bindParam(':deleteID', $deleteUserID);
             $stmt->execute();
-            header("location: manageAccounts.php");
+            header("location: manageAccount.php");
         }
     ?>
     <style>
@@ -157,10 +106,59 @@
 
     </style>
 </head>
-        
 
-    <!-- Footer Start -->
-    <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
+<body>
+    <div class="container-xxl bg-white p-0">
+        <!-- Spinner Start -->
+        <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <!-- Spinner End -->
+
+
+        <!-- Navbar & Hero Start -->
+        <div class="container-xxl position-relative p-0">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
+                <a href="" class="navbar-brand p-0">
+                    <h1 class="text-primary m-0"><i class="fa fa-utensils me-3"></i>丹尼斯的貓薄荷</h1>
+                    <!-- <img src="img/logo.png" alt="Logo"> -->
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                    <span class="fa fa-bars"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <div class="navbar-nav ms-auto py-0 pe-4">
+                        <div class="navbar-nav ms-auto p-4 p-lg-0">
+                            <a href="myAccount.php" class="nav-item nav-link active"><?php echo "歡迎，". $_SESSION['username'];?></a>
+                        </div>
+                    </div>
+                    <a href="product.php" class="btn btn-primary py-2 px-4">開始下單</a>
+
+                </div>
+            </nav>
+
+            <div class="container-xxl py-5 bg-dark hero-header mb-5">
+                <div class="container my-5 py-5">
+                    <div class="row align-items-center g-5">
+                        <div class="col-lg-6 text-center text-lg-start">
+                            <h1 class="display-3 text-white animated slideInLeft">享用我們的<br>神奇小植物</h1>
+                            <p class="text-white animated slideInLeft mb-4 pb-2">神奇的小G8話</p>
+                        </div>
+                        <div class="col-lg-6 text-center text-lg-end overflow-hidden">
+                            <img class="img-fluid" src="var/www/html/dbProject/bootstrap-restaurant-template/img/cannabis_leaves_logo.png.png" alt="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Navbar & Hero End -->
+        <?php echo $html; ?>
+
+
+<!-- Footer Start -->
+<div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
             <div class="container py-1">
                     <div class="col-lg-3">
                         <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">Contact</h4>
