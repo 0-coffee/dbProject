@@ -30,54 +30,54 @@
 
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
-    <?php
-        session_start();
-        // 處理越權查看以及錯誤登入
-        if (!isset($_SESSION['username'])) {
-            echo "<script>alert('偵測到未登入'); window.location.href = 'login.php';</script>";
-            exit();
-        }
-        
-        // 處理管理員調出使用者清單
-        include "db_connection.php";
-        $stmt = $db->prepare("SELECT * FROM `product`");
+<?php
+    session_start();
+    // 處理越權查看以及錯誤登入
+    if (!isset($_SESSION['username'])) {
+        echo "<script>alert('偵測到未登入'); window.location.href = 'login.php';</script>";
+        exit();
+    }
+    
+    // 處理管理員調出使用者清單
+    include "db_connection.php";
+    $stmt = $db->prepare("SELECT * FROM `product`");
+    $stmt->execute();
+    
+    $html = "<table><tr><th>ID</th><th>商品名稱</th><th>價格</th></tr>";
+    while ($product = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $html .= "<tr>";
+        $html .= "<td>" . htmlspecialchars($product['ID']) . "</td>";
+        $html .= "<td>" . htmlspecialchars($product['product_name']) . "</td>";
+        $html .= "<td>" . htmlspecialchars($product['price']) . "</td>";
+        $html .= "<td><form action=\"product.php\" method=\"post\"><input type=\"hidden\" name=\"productID\" value=\"" . $product['ID'] . "\"><button type=\"submit\" name=\"cart\">加入購物車</button></form></td>";
+        $html .= "</tr>";
+    }
+    $html .= "</table>";
+
+    // 添加到购物车的处理
+    if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['cart'])) {
+        $productID = $_POST['productID'];
+        $userID = $_SESSION['ID'];
+        $quantity = 1;
+        $price = $product['price'];
+
+        $stmt = $db->prepare("INSERT INTO cart (User_ID, Product_ID, Quantity, Price) VALUES (:User_ID, :Product_ID, :Quantity, :Price)");
+        $stmt->bindParam(':User_ID', $userID);
+        $stmt->bindParam(':Product_ID', $productID);
+        $stmt->bindParam(':Quantity', $quantity);
+        $stmt->bindParam(':Price', $price);
         $stmt->execute();
-        
-        $html = "<table><tr><th>ID</th><th>商品名稱</th><th>價格</th></tr>";
-        while ($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $html .= "<tr>";
-            $html .= "<td>" . htmlspecialchars($user['ID']) . "</td>";
-            $html .= "<td>" . htmlspecialchars($user['product_name']) . "</td>";
-            $html .= "<td>" . htmlspecialchars($user['price']) . "</td>";
-            $html .= "<td><form action=\"product.php\" method=\"post\"><input type=\"hidden\" name=\"productID\" value=\"" . $product['ID'] . "\"><button type=\"submit\" name=\"addToCart\">加入購物車</button></form></td>";
-            $html .= "</tr>";
-        }
-        $html .= "</table>";
-    ?>
-    <?php
-        // 添加到购物车的处理
-        if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['addToCart'])) {
-            include "db_connection.php";
-            $productID = $_POST['productID'];
-            $userID = $_SESSION['ID'];
-            $quantity = 1;
-            $price = $product['price'];
+        header("location: product.php");
 
-            $stmt = $db->prepare("INSERT INTO cart (User_ID, Product_ID, Quantity, Price) VALUES (:User_ID, :Product_ID, :Quantity, :Price)");
-            $stmt->bindParam(':User_ID', $userID);
-            $stmt->bindParam(':Product_ID', $productID);
-            $stmt->bindParam(':Quantity', $quantity);
-            $stmt->bindParam(':Price', $price);
-            $stmt->execute();
+        echo "<script>
+            alert('商品成功加入購物車');
+            setTimeout(function() {
+                window.location.href = 'product.php';
+            }, 0);
+        </script>";
+    }
+?>
 
-            echo "<script>
-                alert('商品成功加入購物車');
-                setTimeout(function() {
-                    window.location.href = 'product.php';
-                }, 0);
-            </script>";
-        }
-    ?>
     <style>
         table {
             width: 100%;        /* 表格寬度佔滿父元素 */
