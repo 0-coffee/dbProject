@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<?php
-    session_start();
-?>
-
 <head>
     <meta charset="utf-8">
     <title>丹尼斯的貓薄荷</title>
@@ -34,6 +30,106 @@
 
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+    <?php
+        session_start();
+        // 處理越權查看以及錯誤登入
+        if (!isset($_SESSION['username'])) {
+            echo "<script>alert('偵測到未登入'); window.location.href = 'login.php';</script>";
+            exit();
+        }
+        
+        // 處理管理員調出使用者清單
+        include "db_connection.php";
+        $stmt = $db->prepare("SELECT * FROM `product`");
+        $stmt->execute();
+        
+        $html = "<table><tr><th>ID</th><th>商品名稱</th><th>價格</th><th>商品描述</th></tr>";
+        while ($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $html .= "<tr>";
+            $html .= "<td>" . htmlspecialchars($user['PID']) . "</td>";
+            $html .= "<td>" . htmlspecialchars($user['product_name']) . "</td>";
+            $html .= "<td>" . htmlspecialchars($user['price']) . "</td>";
+            $html .= "<td>" . htmlspecialchars($user['product_info']) . "</td>";
+            $html .= "<td><form action='product.php' method='post'><input type='hidden' name='addToCartPID' value='".$user['PID']."'><button type='submit' name='addToCart' value='true' class='add-to-cart'>加入我的購物車</button></form></td>";
+            $html .= "</tr>";
+        }
+        $html .= "</table>";
+    ?>
+
+    <?php
+        if (($_SERVER['REQUEST_METHOD'] === "POST")&&($_POST['addToCart'])){
+            $checkCartExists = $db->prepare("SELECT COUNT(*) FROM cart WHERE PID = :PID AND ID = :ID");
+            $checkCartExists -> bindParam(':PID', $_POST['addToCartPID']);
+            $checkCartExists -> bindParam(':ID', $_SESSION['user_id']);
+            $checkCartExists -> execute();
+            if($checkCartExists->fetchColumn() > 0) {
+                ob_end_flush();
+                echo "<script>alert('該物品先前已加入我的購物車');</script>";
+                echo '<script>window.location.href="product.php";</script>';
+            } else {
+                $stmt = $db->prepare("INSERT INTO `cart`(`ID`, `PID`) VALUES (:userID, :PID)");
+                $stmt -> bindParam(':userID', $_SESSION['user_id']);
+                $stmt -> bindParam(':PID', $_POST['addToCartPID']);
+                $stmt->execute();
+                ob_end_flush();
+                echo "<script>alert('已加入我的購物車');</script>";
+                echo '<script>window.location.href="product.php";</script>';
+            }
+        }
+    ?>
+
+    <style>
+        table {
+            width: 100%;        /* 表格寬度佔滿父元素 */
+            border-collapse: collapse; /* 邊框合併為單一邊框 */
+            margin: 20px 0;     /* 上下邊距為 20px，左右為 0 */
+            font-family: Arial, sans-serif; /* 使用 Arial 或無襯線字體 */
+            color: #333;        /* 字體顏色 */
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1); /* 輕微陰影效果 */
+            background-color: #ffffff; /* 白色背景 */
+        }
+
+        /* 表格標頭 */
+        th {
+            background-color: #f2f2f2; /* 標頭背景顏色 */
+            color: #333;        /* 標頭文字顏色 */
+            font-weight: bold;  /* 粗體文字 */
+            padding: 12px 15px; /* 內距 */
+            text-align: left;   /* 文字對齊 */
+        }
+
+        /* 表格行與單元格 */
+        tr {
+            border-bottom: 1px solid #ddd; /* 行底部邊框 */
+        }
+
+        td {
+            padding: 12px 15px; /* 單元格內距 */
+            text-align: left;   /* 文字對齊 */
+        }
+
+        /* 滑過行變色效果 */
+        tr:hover {
+            background-color: #f5f5f5; /* 滑過時的背景顏色 */
+        }
+
+        /* 按鈕樣式 */
+        button {
+            background-color: #007bff; /* 按鈕背景色 */
+            color: white; /* 按鈕文字顏色 */
+            padding: 6px 12px; /* 內邊距 */
+            border: none; /* 無邊框 */
+            border-radius: 4px; /* 圓角邊框 */
+            cursor: pointer; /* 鼠標樣式 */
+            transition: background-color 0.3s; /* 過渡效果 */
+        }
+
+        /* 鼠標懸停在按鈕上時的效果 */
+        button:hover {
+            background-color: #0056b3; /* 按鈕深藍色 */
+        }
+
+    </style>
 </head>
 
 <body>
@@ -68,15 +164,9 @@
                     ?>
                         <div class="navbar-nav ms-auto p-4 p-lg-0">
                             <a href="myAccount.php" class="nav-item nav-link active"><?php echo "歡迎，". $_SESSION['username'];?></a>
+                            <a href="logout.php" class="nav-item nav-link active"><?php echo "登出";?> </a>
                         </div>
                     </div>
-                    <?php
-                        // 检查用户角色并生成相应的链接
-                        if(isset($_SESSION['role']) && $_SESSION['role'] == "user") {
-                            echo '<a href="product.php" class="btn btn-primary py-2 px-4">開始下單</a>';
-                        }
-                    ?>
-
                 </div>
             </nav>
 
@@ -95,284 +185,10 @@
             </div>
         </div>
         <!-- Navbar & Hero End -->
+        <?php echo $html; ?>
 
-    <style>
-       /* 基本重置和字體設置 */
-        h1, h2, h3, p {
-            margin: 0;
-            padding: 0;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            color: #333;
-        }
-
-        /* 主容器設計，包含背景和陰影 */
-        .container_list {
-            width: 90%;
-            margin: 20px auto;
-            background-color: #f4f8ff; /* 淺藍色背景 */
-            padding: 20px;
-            border-radius: 8px; /* 圓角邊框 */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* 輕微的陰影 */
-        }
-
-        /* 排序條樣式 */
-        .sort-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .sort-bar select, .sort-bar input[type="text"], .sort-bar input[type="submit"] {
-            padding: 10px 15px;
-            margin-right: 10px;
-            border: 1px solid #d1e3ff; /* 淺藍色邊框 */
-            border-radius: 6px; /* 圓角邊框 */
-            background-color: #ffffff; /* 白色背景 */
-        }
-
-        .sort-bar input[type="submit"] {
-            cursor: pointer;
-            background-color: #007bff; /* 較深的藍色背景 */
-            color: white;
-            border: none;
-        }
-
-        h3 {
-            font-size: 1.5rem;
-            color: #0056b3; /* 淺藍色文字 */
-            margin-bottom: 20px;
-        }
-
-        /* 產品列表樣式 */
-        .product-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .product-list .product {
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #e2e5ec; /* 更淺的藍色分隔線 */
-            padding: 10px 0;
-        }
-
-        .product-list .product img {
-            width: 100px; /* 保持圖片為方形 */
-            height: 100px;
-            object-fit: cover; /* 保證圖片充滿容器 */
-            margin-right: 20px;
-            border-radius: 5px; /* 圓角 */
-        }
-
-        .product-list .product-info {
-            flex-grow: 1;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .product-list .product-info .name,
-        .product-list .product-info .price,
-        .product-list .product-info .upload-date {
-            margin: 0 10px;
-        }
-
-        /* 分頁樣式 */
-        .pagination {
-            list-style: none;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .pagination .page-item {
-            margin: 0 5px;
-        }
-
-        .pagination .page-link {
-            display: block;
-            padding: 8px 12px;
-            background-color: #d1e3ff;
-            color: #0056b3;
-            border-radius: 4px;
-            text-decoration: none;
-        }
-
-        .pagination .page-link:hover {
-            background-color: #b9d1f8;
-        }
-        .add-to-cart {
-            padding: 10px 20px;
-            font-size: 1rem;
-            color: white;
-            background: linear-gradient(145deg, #006bff, #0056b3);
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
-        }
-
-        .add-to-cart:hover {
-            background: linear-gradient(145deg, #0056b3, #0041a8);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.24);
-        }
-
-        .add-to-cart:active {
-            background: #0041a8;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
-        }
-
-        table {
-            width: 100%; /* 表格寬度占滿容器 */
-            border-collapse: collapse; /* 邊框合併 */
-            background-color: #f0f8ff; /* 淺藍色背景 */
-            font-family: Arial, sans-serif; /* 使用Arial或無襯線字體 */
-        }
-
-        /* 表頭樣式 */
-        th {
-            background-color: #e0efff; /* 表頭使用略深的藍色 */
-            color: #333; /* 文字顏色為深灰 */
-            padding: 10px; /* 內邊距 */
-            font-size: 16px; /* 字體大小 */
-            border-bottom: 2px solid #ccc; /* 底部有灰色邊框 */
-        }
-
-        /* 表格行樣式 */
-        td {
-            text-align: center; /* 文字居中顯示 */
-            padding: 8px; /* 內邊距 */
-            font-size: 14px; /* 字體大小 */
-        }
-
-        /* 表格行條紋效果 */
-        tr:nth-child(odd) {
-            background-color: #e6f1ff; /* 淺藍色條紋 */
-        }
-
-        /* 按鈕樣式 */
-        button {
-            background-color: #007bff; /* 按鈕背景色 */
-            color: white; /* 按鈕文字顏色 */
-            padding: 6px 12px; /* 內邊距 */
-            border: none; /* 無邊框 */
-            border-radius: 4px; /* 圓角邊框 */
-            cursor: pointer; /* 鼠標樣式 */
-            transition: background-color 0.3s; /* 過渡效果 */
-        }
-
-        /* 鼠標懸停在按鈕上時的效果 */
-        button:hover {
-            background-color: #0056b3; /* 按鈕深藍色 */
-        }
-
-        /* 產品圖片樣式 */
-        img {
-            width: 100px; /* 圖片寬度 */
-            height: auto; /* 高度自動 */
-        }
-
-    </style>
-    <?php
-        if (!isset($_SESSION['username'])) {
-            echo "<script>alert('偵測到未登入'); window.location.href = 'login.php';</script>";
-            exit(); 
-        }
-    
-        include "db_connection.php";
-
-        
-        $recordsPerPage = 20;
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $offset = ($page - 1) * $recordsPerPage;
-
-        
-        $sortTime = $_GET['sort-time'] ?? 'newest';
-        $sortPrice = $_GET['sort-price'] ?? 'highest';
-        $sortCategory = $_GET['sort-category'] ?? '';
-        $searchTerm = $_GET['search'] ?? '';
-
-        
-        $sql = "SELECT * FROM product WHERE 1=1";
-
-        
-        if (!empty($searchTerm)) {
-            $sql .= " AND product_name LIKE :searchTerm";
-        }
-
-        
-        if (!empty($sortCategory)) {
-            $sql .= " AND type = :sortCategory";
-        }
-
-        
-        $orderClause = [];
-        if ($sortTime == 'newest') {
-            $orderClause[] = "uploadDate DESC";
-        } elseif ($sortTime == 'oldest') {
-            $orderClause[] = "uploadDate ASC";
-        }
-        if ($sortPrice == 'highest') {
-            $orderClause[] = "price DESC";
-        } elseif ($sortPrice == 'lowest') {
-            $orderClause[] = "price ASC";
-        }
-        if (!empty($orderClause)) {
-            $sql .= " ORDER BY " . implode(', ', $orderClause);
-        }
-
-        
-        $sql .= " LIMIT :offset, :recordsPerPage";
-
-        $stmt = $db->prepare($sql);
-        if (!empty($searchTerm)) {
-            $searchTerm = "%" . $searchTerm . "%";
-            $stmt->bindParam(':searchTerm', $searchTerm, PDO::PARAM_STR);
-        }
-        if (!empty($sortCategory)) {
-            $stmt->bindParam(':sortCategory', $sortCategory, PDO::PARAM_STR);
-        }
-        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-        $stmt->bindParam(':recordsPerPage', $recordsPerPage, PDO::PARAM_INT);
-        $stmt->execute();
-
-      
-        $countSql = "SELECT COUNT(*) FROM product WHERE 1=1";
-        
-        $countStmt = $db->prepare($countSql);
- 
-        $countStmt->execute();
-        $totalRecords = $countStmt->fetchColumn();
-        $numPages = ceil($totalRecords / $recordsPerPage);
-    ?>
-    <?php
-        if (($_SERVER['REQUEST_METHOD'] === "POST")&&($_POST['addToCart'])){
-            $checkCartExists = $db->prepare("SELECT COUNT(*) FROM cart WHERE PID = :PID AND ID = :ID");
-            $checkCartExists -> bindParam(':PID', $_POST['addToCartPID']);
-            $checkCartExists -> bindParam(':ID', $_SESSION['ID']);
-            $checkCartExists -> execute();
-            if($checkCartExists->fetchColumn() > 0) {
-                ob_end_flush();
-                echo "<script>alert('該物品先前已加入我的購物車');</script>";
-                echo '<script>window.location.href="product.php";</script>';
-            } else {
-                $stmt = $db->prepare("INSERT INTO `cart`(`ID`, `PID`) VALUES (:userID, :PID)");
-                $stmt -> bindParam(':userID', $_SESSION['ID']);
-                $stmt -> bindParam(':PID', $_POST['addToCartPID']);
-                $stmt->execute();
-                ob_end_flush();
-                echo "<script>alert('已加入我的購物車');</script>";
-                echo '<script>window.location.href="product.php";</script>';
-            }
-        }
-    ?>
-</head>
-
-        <!-- Footer Start -->
-        <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
+<!-- Footer Start -->
+<div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
             <div class="container py-1">
                     <div class="col-lg-3">
                         <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">Contact</h4>
