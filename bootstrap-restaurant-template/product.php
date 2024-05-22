@@ -164,6 +164,7 @@
                     ?>
                         <div class="navbar-nav ms-auto p-4 p-lg-0">
                             <a href="myAccount.php" class="nav-item nav-link active"><?php echo "歡迎，". $_SESSION['username'];?></a>
+                            <a href="cart.php" class="nav-item nav-link active"><?php echo "購物車";?> </a>
                             <a href="logout.php" class="nav-item nav-link active"><?php echo "登出";?> </a>
                         </div>
                     </div>
