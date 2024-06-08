@@ -52,7 +52,10 @@
             $html .= "<td>" . htmlspecialchars($user['product_name']) . "</td>";
             $html .= "<td>" . htmlspecialchars($user['price']) . "</td>";
             $html .= "<td>" . htmlspecialchars($user['product_info']) . "</td>";
-            $html .= "<td><form action=\"manageProduct.php\" method=\"post\" onsubmit=\"return confirmDelete();\">". ((($user['role'] === "admin")||($user['role'] === "root")) ? "" : "<input type=\"hidden\" name=\"deleteID\" value=\"".$user['PID']."\"><button type=\"submit\" value=\"ture\" name=\"del\" style=\"background-color: #ff4d4d; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; transition: background 0.3s ease;\">刪除商品</button></form></td>");
+            $html .= "<td><form action=\"manageProduct.php\" method=\"post\" onsubmit=\"return confirmDelete();\">";
+            $html .= "<input type=\"hidden\" name=\"deleteID\" value=\"".$user['PID']."\">";
+            $html .= "<button type=\"submit\" value=\"true\" name=\"del\" style=\"background-color: #ff4d4d; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; transition: background 0.3s ease;\">刪除商品</button>";
+            $html .= "</form></td>";
             $html .= "</tr>";
         }
         $html .= "</table>";

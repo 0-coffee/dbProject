@@ -54,7 +54,7 @@
             $html .= "<td>" . htmlspecialchars($user['realname']) . "</td>";
             $html .= "<td>" . htmlspecialchars($user['username']) . "</td>";
             $html .= "<td>" . htmlspecialchars($user['email']) . "</td>";
-            $html .= "<td><form action=\"manageAccount.php\" method=\"post\" onsubmit=\"return confirmDelete();\">". ((($user['role'] === "admin")||($user['role'] === "root")) ? "" : "<input type=\"hidden\" name=\"deleteID\" value=\"".$user['ID']."\"><button type=\"submit\" style=\"background-color: #ff4d4d; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; transition: background 0.3s ease;\">刪除使用者</button></form></td>");
+            $html .= "<td><form action=\"manageAccount.php\" method=\"post\" onsubmit=\"return confirmDelete();\">". ((($user['role'] === "admin")) ? "" : "<input type=\"hidden\" name=\"deleteID\" value=\"".$user['ID']."\"><button type=\"submit\" style=\"background-color: #ff4d4d; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; transition: background 0.3s ease;\">刪除使用者</button></form></td>");
             $html .= "</tr>";
         }
         $html .= "</table>";
@@ -128,7 +128,6 @@
                     <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f4b8/512.gif" alt="💸" width="32" height="32">
                     </picture>
                     </i>丹尼斯的貓薄荷</h1>
-                    <!-- <img src="img/logo.png" alt="Logo"> -->
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                     <span class="fa fa-bars"></span>
@@ -136,7 +135,6 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto py-0 pe-4">
                     <?php
-                        // 检查用户角色并生成相应的链接
                         if(isset($_SESSION['role']) && $_SESSION['role'] == "admin") {
                             echo '<a href="manageProduct.php" class="nav-item nav-link">管理商品</a>';
                             echo '<a href="manageAccount.php" class="nav-item nav-link">管理帳號</a>';

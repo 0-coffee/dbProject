@@ -80,9 +80,9 @@
         $html .= "<div class='pagination'>";
         for ($page = 1; $page <= $totalPages; $page++) {
             if ($page == $currentPage) {
-                $html .= "<a class='active' href='product.php?page=$page&search=$search'>$page</a>";
+                $html .= "<a class='active' href='product.php?page=$page" . (isset($search) ? "&search=$search" : "") . "'>$page</a>";
             } else {
-                $html .= "<a href='product.php?page=$page&search=$search'>$page</a>";
+                $html .= "<a class='active' href='product.php?page=$page" . (isset($search) ? "&search=$search" : "") . "'>$page</a>";
             }
         }
         $html .= "</div>";
