@@ -47,7 +47,12 @@
         <div class="container-xxl position-relative p-0">
             <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
                 <a href="" class="navbar-brand p-0">
-                    <h1 class="text-primary m-0"><i class="fa fa-utensils me-3"></i>丹尼斯的貓薄荷</h1>
+                    <h1 class="text-primary m-0">
+                    <picture>
+                    <source srcset="https://fonts.gstatic.com/s/e/notoemoji/latest/1f4b8/512.webp" type="image/webp">
+                    <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f4b8/512.gif" alt="💸" width="32" height="32">
+                    </picture>
+                    </i>丹尼斯的貓薄荷</h1>
                     <!-- <img src="img/logo.png" alt="Logo"> -->
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
@@ -64,12 +69,11 @@
                 </div>
             </nav>
 
-            <div class="container-xxl py-5 bg-dark hero-header mb-5">
+            <div class="container-xxl py-5 bg-dark mb-5">
                 <div class="container my-5 py-5">
                     <div class="row align-items-center g-5">
                         <div class="col-lg-6 text-center text-lg-start">
-                            <h1 class="display-3 text-white animated slideInLeft">享用我們的<br>神奇小植物</h1>
-                            <p class="text-white animated slideInLeft mb-4 pb-2">神奇的小G8話</p>
+                            <h1 class="display-3 text-white animated slideInLeft">註冊帳號</h1>
                         </div>
                         <div class="col-lg-6 text-center text-lg-end overflow-hidden">
                             <img class="img-fluid" src="var/www/html/dbProject/bootstrap-restaurant-template/img/cannabis_leaves_logo.png.png" alt="">
@@ -79,18 +83,16 @@
             </div>
         </div>
         <!-- Navbar & Hero End -->
-    <?php
-		session_start();
+</head>
 
-		if (!isset($_SESSION['csrf_token'])) $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+<body>
+
+<?php
+		session_start();
 
 		include "db_connection.php";
 
 		if ($_SERVER['REQUEST_METHOD'] === "POST"){
-
-			if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) { //檢查cfrs令牌
-				die("CSRF token validation failed");
-			}
 
 			$realname = $_POST['realname']?? '';
             $email = $_POST['email'] ?? '';
@@ -159,12 +161,10 @@
 				}
 
 				try {
-                        // 查询数据库中最后一条记录的 ID
                     $lastIdStmt = $db->prepare("SELECT ID FROM member ORDER BY ID DESC LIMIT 1");
                     $lastIdStmt->execute();
                     $lastId = $lastIdStmt->fetchColumn();
 
-                    // 新用户的 ID 是最后一条记录的 ID + 1
                     $newId = $lastId + 1;
 					$stmt = $db->prepare("INSERT INTO member (role, ID, realname, email, tel, username, password) VALUES (:role, :ID, :realname, :email, :tel, :username, :password)");
 					$role = 'user';
@@ -190,9 +190,7 @@
 			}
 		}
 	?>
-</head>
 
-<body>
     <div>
     <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.5s">
     <div class="bg-light rounded h-100 d-flex align-items-center p-5">
@@ -231,7 +229,6 @@
                 </div>
                 <div class="col-12">
                     <button class="btn btn-primary w-100 py-3" type="submit">註冊帳號</button>
-                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                 </div>
             </div>
         </form>
@@ -247,9 +244,20 @@
             <div class="container py-1">
                     <div class="col-lg-3">
                         <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">Contact</h4>
-                        <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
-                        <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
-                        <p class="mb-2"><i class="fa fa-envelope me-3"></i>info@example.com</p>
+                        <?php
+                            function generateRandomString($length = 10) {
+                                $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                                $randomString = '';
+                                for ($i = 0; $i < $length; $i++) {
+                                    $randomString .= $characters[rand(0, strlen($characters) - 1)];
+                                }
+                                return $randomString;
+                            }
+                        ?>
+
+                        <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i><?php echo generateRandomString(10); ?></p>
+                        <p class="mb-2"><i class="fa fa-phone-alt me-3"></i><?php echo generateRandomString(10); ?></p>
+                        <p class="mb-2"><i class="fa fa-envelope me-3"></i><?php echo generateRandomString(10); ?>@<?php echo generateRandomString(5); ?>.com</p>
                         <div class="d-flex pt-2">
                             <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-facebook-f"></i></a>
                             <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-youtube"></i></a>

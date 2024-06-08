@@ -31,29 +31,61 @@
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
     <?php
-        session_start();
-        // 處理越權查看以及錯誤登入
-        if (!isset($_SESSION['username'])) {
-            echo "<script>alert('偵測到未登入'); window.location.href = 'login.php';</script>";
-            exit();
+    session_start();
+
+    if (!isset($_SESSION['username'])) {
+        echo "<script>alert('偵測到未登入'); window.location.href = 'login.php';</script>";
+        exit();
+    }
+
+    include "db_connection.php";
+
+
+        $itemsPerPage = 10; 
+        $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $offset = ($currentPage - 1) * $itemsPerPage;
+
+        if(isset($_GET['search']) && !empty($_GET['search'])) {
+            $search = $_GET['search'];
+            $totalItemsStmt = $db->prepare("SELECT COUNT(*) FROM `product` WHERE `product_name` LIKE :search");
+            $totalItemsStmt->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
+        } else {
+            $totalItemsStmt = $db->prepare("SELECT COUNT(*) FROM `product`");
         }
-        
-        // 處理管理員調出使用者清單
-        include "db_connection.php";
-        $stmt = $db->prepare("SELECT * FROM `product`");
+        $totalItemsStmt->execute();
+        $totalItems = $totalItemsStmt->fetchColumn();
+        $totalPages = ceil($totalItems / $itemsPerPage);
+
+        if(isset($_GET['search']) && !empty($_GET['search'])) {
+            $stmt = $db->prepare("SELECT * FROM `product` WHERE `product_name` LIKE :search LIMIT :offset, :itemsPerPage");
+            $stmt->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
+        } else {
+            $stmt = $db->prepare("SELECT * FROM `product` LIMIT :offset, :itemsPerPage");
+        }
+        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+        $stmt->bindParam(':itemsPerPage', $itemsPerPage, PDO::PARAM_INT);
         $stmt->execute();
-        
-        $html = "<table><tr><th>ID</th><th>商品名稱</th><th>價格</th><th>商品描述</th></tr>";
+
+        $html = "<table><tr><th>商品名稱</th><th>價格</th><th>商品描述</th></tr>";
         while ($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $html .= "<tr>";
-            $html .= "<td>" . htmlspecialchars($user['PID']) . "</td>";
             $html .= "<td>" . htmlspecialchars($user['product_name']) . "</td>";
             $html .= "<td>" . htmlspecialchars($user['price']) . "</td>";
             $html .= "<td>" . htmlspecialchars($user['product_info']) . "</td>";
-            $html .= "<td><form action='product.php' method='post'><input type='hidden' name='addToCartPID' value='".$user['PID']."'><button type='submit' name='addToCart' value='true' class='add-to-cart'>加入我的購物車</button></form></td>";
+            $html .= "<td><form action='product.php' method='post'><input type='hidden' name='addToCartPID' value='" . $user['PID'] . "'><button type='submit' name='addToCart' value='true' class='add-to-cart'>加入我的購物車</button></form></td>";
             $html .= "</tr>";
         }
         $html .= "</table>";
+
+        $html .= "<div class='pagination'>";
+        for ($page = 1; $page <= $totalPages; $page++) {
+            if ($page == $currentPage) {
+                $html .= "<a class='active' href='product.php?page=$page&search=$search'>$page</a>";
+            } else {
+                $html .= "<a href='product.php?page=$page&search=$search'>$page</a>";
+            }
+        }
+        $html .= "</div>";
     ?>
 
     <?php
@@ -124,10 +156,18 @@
             transition: background-color 0.3s; /* 過渡效果 */
         }
 
-        /* 鼠標懸停在按鈕上時的效果 */
         button:hover {
             background-color: #0056b3; /* 按鈕深藍色 */
         }
+
+        .pagination a {
+            margin-right: 5px;
+            border: 1px solid #ccc;
+            padding: 5px 10px; 
+            border-radius: 3px; 
+            font-size: 20px;
+}
+
 
     </style>
 </head>
@@ -145,9 +185,14 @@
 
         <!-- Navbar & Hero Start -->
         <div class="container-xxl position-relative p-0">
-            <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
                 <a href="" class="navbar-brand p-0">
-                    <h1 class="text-primary m-0"><i class="fa fa-utensils me-3"></i>丹尼斯的貓薄荷</h1>
+                    <h1 class="text-primary m-0">
+                    <picture>
+                    <source srcset="https://fonts.gstatic.com/s/e/notoemoji/latest/1f4b8/512.webp" type="image/webp">
+                    <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f4b8/512.gif" alt="💸" width="32" height="32">
+                    </picture>
+                    </i>丹尼斯的貓薄荷</h1>
                     <!-- <img src="img/logo.png" alt="Logo"> -->
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
@@ -168,15 +213,21 @@
                             <a href="logout.php" class="nav-item nav-link active"><?php echo "登出";?> </a>
                         </div>
                     </div>
+                    <?php
+                        // 检查用户角色并生成相应的链接
+                        if(isset($_SESSION['role']) && $_SESSION['role'] == "user") {
+                            echo '<a href="product.php" class="btn btn-primary py-2 px-4">開始下單</a>';
+                        }
+                    ?>
+
                 </div>
             </nav>
 
-            <div class="container-xxl py-5 bg-dark hero-header mb-5">
+            <div class="container-xxl py-5 bg-dark mb-5">
                 <div class="container my-5 py-5">
                     <div class="row align-items-center g-5">
                         <div class="col-lg-6 text-center text-lg-start">
-                            <h1 class="display-3 text-white animated slideInLeft">享用我們的<br>神奇小植物</h1>
-                            <p class="text-white animated slideInLeft mb-4 pb-2">神奇的小G8話</p>
+                            <h1 class="display-3 text-white animated slideInLeft">商品清單</h1>
                         </div>
                         <div class="col-lg-6 text-center text-lg-end overflow-hidden">
                             <img class="img-fluid" src="var/www/html/dbProject/bootstrap-restaurant-template/img/cannabis_leaves_logo.png.png" alt="">
@@ -184,18 +235,35 @@
                     </div>
                 </div>
             </div>
+
+                <form method="GET" action="product.php">
+                    <label for="search">請輸入想要的商品：</label>
+                    <input type="text" name="search" id="search">
+                    <button type="submit">搜尋</button>
+                </form>
         </div>
         <!-- Navbar & Hero End -->
         <?php echo $html; ?>
 
-<!-- Footer Start -->
-<div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
+        <!-- Footer Start -->
+        <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
             <div class="container py-1">
                     <div class="col-lg-3">
                         <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">Contact</h4>
-                        <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
-                        <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
-                        <p class="mb-2"><i class="fa fa-envelope me-3"></i>info@example.com</p>
+                        <?php
+                            function generateRandomString($length = 10) {
+                                $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                                $randomString = '';
+                                for ($i = 0; $i < $length; $i++) {
+                                    $randomString .= $characters[rand(0, strlen($characters) - 1)];
+                                }
+                                return $randomString;
+                            }
+                        ?>
+
+                        <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i><?php echo generateRandomString(10); ?></p>
+                        <p class="mb-2"><i class="fa fa-phone-alt me-3"></i><?php echo generateRandomString(10); ?></p>
+                        <p class="mb-2"><i class="fa fa-envelope me-3"></i><?php echo generateRandomString(10); ?>@<?php echo generateRandomString(5); ?>.com</p>
                         <div class="d-flex pt-2">
                             <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-facebook-f"></i></a>
                             <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-youtube"></i></a>

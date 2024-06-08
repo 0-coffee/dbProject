@@ -2,10 +2,10 @@
 // database_connection.php
 
 // 數據庫連接設置
-$host = "localhost:3306";
-$username = "root";
-$password = "root";
-$dbname = "members_info";
+$host = "localhost";
+$username = "ciai_dbst";
+$password = "000000";
+$dbname = "cbb111217";
 
 try {
     $db = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);

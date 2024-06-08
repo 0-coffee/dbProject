@@ -51,7 +51,11 @@
         <div class="container-xxl position-relative p-0">
             <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
                 <a href="" class="navbar-brand p-0">
-                    <h1 class="text-primary m-0"><i class="fa fa-utensils me-3"></i>丹尼斯的貓薄荷</h1>
+                    <h1 class="text-primary m-0"><picture>
+                    <source srcset="https://fonts.gstatic.com/s/e/notoemoji/latest/1f4b8/512.webp" type="image/webp">
+                    <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f4b8/512.gif" alt="💸" width="32" height="32">
+                    </picture>
+                    丹尼斯的貓薄荷</h1>
                     <!-- <img src="img/logo.png" alt="Logo"> -->
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
@@ -60,14 +64,19 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto py-0 pe-4">
                     <?php
-                        // 检查用户角色并生成相应的链接
                         if(isset($_SESSION['role']) && $_SESSION['role'] == "admin") {
                             echo '<a href="manageProduct.php" class="nav-item nav-link">管理商品</a>';
                             echo '<a href="manageAccount.php" class="nav-item nav-link">管理帳號</a>';
+                            echo '<a href="manageOrder.php" class="nav-item nav-link">管理訂單</a>';
                         }
                     ?>
                         <div class="navbar-nav ms-auto p-4 p-lg-0">
                             <a href="myAccount.php" class="nav-item nav-link active"><?php echo "歡迎，". $_SESSION['username'];?></a>
+                            <?php
+                            if(isset($_SESSION['role']) && $_SESSION['role'] == "user") {
+                            echo '<a href="cart.php" class="nav-item nav-link">購物車</a>';
+                        }
+                            ?>
                             <a href="logout.php" class="nav-item nav-link active"><?php echo "登出";?> </a>
                         </div>
                     </div>
@@ -81,12 +90,11 @@
                 </div>
             </nav>
 
-            <div class="container-xxl py-5 bg-dark hero-header mb-5">
+            <div class="container-xxl py-5 bg-dark mb-5">
                 <div class="container my-5 py-5">
                     <div class="row align-items-center g-5">
                         <div class="col-lg-6 text-center text-lg-start">
-                            <h1 class="display-3 text-white animated slideInLeft">享用我們的<br>神奇小植物</h1>
-                            <p class="text-white animated slideInLeft mb-4 pb-2">神奇的小G8話</p>
+                            <h1 class="display-3 text-white animated slideInLeft">個人資料</h1>
                         </div>
                         <div class="col-lg-6 text-center text-lg-end overflow-hidden">
                             <img class="img-fluid" src="var/www/html/dbProject/bootstrap-restaurant-template/img/cannabis_leaves_logo.png.png" alt="">
@@ -212,24 +220,6 @@
         </table>
     </div>
 
-        <!-- Footer Start -->
-        <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
-            <div class="container py-1">
-                    <div class="col-lg-3">
-                        <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">Contact</h4>
-                        <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
-                        <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
-                        <p class="mb-2"><i class="fa fa-envelope me-3"></i>info@example.com</p>
-                        <div class="d-flex pt-2">
-                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-facebook-f"></i></a>
-                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-youtube"></i></a>
-                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-linkedin-in"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Footer End -->
 
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>

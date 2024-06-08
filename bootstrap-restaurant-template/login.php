@@ -47,7 +47,11 @@
         <div class="container-xxl position-relative p-0">
             <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
                 <a href="" class="navbar-brand p-0">
-                    <h1 class="text-primary m-0"><i class="fa fa-utensils me-3"></i>丹尼斯的貓薄荷</h1>
+                    <h1 class="text-primary m-0"><picture>
+                    <source srcset="https://fonts.gstatic.com/s/e/notoemoji/latest/1f4b8/512.webp" type="image/webp">
+                    <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f4b8/512.gif" alt="💸" width="32" height="32">
+                    </picture>
+                    丹尼斯的貓薄荷</h1>
                     <!-- <img src="img/logo.png" alt="Logo"> -->
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
@@ -56,7 +60,6 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto py-0 pe-4">
                         <a href="index.php" class="nav-item nav-link active">主頁</a>
-                        <a href="about.php" class="nav-item nav-link">關於</a>
                         <a href="login.php" class="nav-item nav-link">login</a>
                     </div>
                     <a href="product.php" class="btn btn-primary py-2 px-4">開始下單</a>
@@ -64,12 +67,11 @@
                 </div>
             </nav>
 
-            <div class="container-xxl py-5 bg-dark hero-header mb-5">
+            <div class="container-xxl py-5 bg-dark mb-5">
                 <div class="container my-5 py-5">
                     <div class="row align-items-center g-5">
                         <div class="col-lg-6 text-center text-lg-start">
-                            <h1 class="display-3 text-white animated slideInLeft">享用我們的<br>神奇小植物</h1>
-                            <p class="text-white animated slideInLeft mb-4 pb-2">神奇的小G8話</p>
+                            <h1 class="display-3 text-white animated slideInLeft">登入</h1>
                         </div>
                         <div class="col-lg-6 text-center text-lg-end overflow-hidden">
                             <img class="img-fluid" src="var/www/html/dbProject/bootstrap-restaurant-template/img/cannabis_leaves_logo.png.png" alt="">
@@ -131,7 +133,6 @@
                 <div class="col-12">
                     <button class="btn btn-primary w-100 py-3" type="submit">登入</button> 
                     <a href="register.php" class="mb-4">沒有帳號號？註冊一個吧</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <a href="forgotPassword.php" class="mb-4">忘記密碼？召回你的密碼吧</a>
                 </div>
             </div>
         </form>
@@ -144,9 +145,20 @@
             <div class="container py-1">
                     <div class="col-lg-3">
                         <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">Contact</h4>
-                        <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
-                        <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
-                        <p class="mb-2"><i class="fa fa-envelope me-3"></i>info@example.com</p>
+                        <?php
+                            function generateRandomString($length = 10) {
+                                $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                                $randomString = '';
+                                for ($i = 0; $i < $length; $i++) {
+                                    $randomString .= $characters[rand(0, strlen($characters) - 1)];
+                                }
+                                return $randomString;
+                            }
+                        ?>
+
+                        <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i><?php echo generateRandomString(10); ?></p>
+                        <p class="mb-2"><i class="fa fa-phone-alt me-3"></i><?php echo generateRandomString(10); ?></p>
+                        <p class="mb-2"><i class="fa fa-envelope me-3"></i><?php echo generateRandomString(10); ?>@<?php echo generateRandomString(5); ?>.com</p>
                         <div class="d-flex pt-2">
                             <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-facebook-f"></i></a>
                             <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-youtube"></i></a>

@@ -41,20 +41,18 @@
             exit();
         }
         
-        // 處理管理員調出使用者清單
         include "db_connection.php";
-        $stmt = $db->prepare("SELECT * FROM `member`");
+        $stmt = $db->prepare("SELECT * FROM `product`");
         $stmt->execute();
         
-        $html = "<table><tr><th>ID</th><th>身分組</th><th>使用者姓名</th><th>使用者名稱</th><th>電郵</th></tr>";
+        $html = "<table><tr><th>ID</th><th>商品名稱</th><th>價格</th><th>商品描述</th></tr>";
         while ($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $html .= "<tr>";
-            $html .= "<td>" . htmlspecialchars($user['ID']) . "</td>";
-            $html .= "<td>" . htmlspecialchars($user['role']) . "</td>";
-            $html .= "<td>" . htmlspecialchars($user['realname']) . "</td>";
-            $html .= "<td>" . htmlspecialchars($user['username']) . "</td>";
-            $html .= "<td>" . htmlspecialchars($user['email']) . "</td>";
-            $html .= "<td><form action=\"manageAccount.php\" method=\"post\" onsubmit=\"return confirmDelete();\">". ((($user['role'] === "admin")||($user['role'] === "root")) ? "" : "<input type=\"hidden\" name=\"deleteID\" value=\"".$user['ID']."\"><button type=\"submit\" style=\"background-color: #ff4d4d; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; transition: background 0.3s ease;\">刪除使用者</button></form></td>");
+            $html .= "<td>" . htmlspecialchars($user['PID']) . "</td>";
+            $html .= "<td>" . htmlspecialchars($user['product_name']) . "</td>";
+            $html .= "<td>" . htmlspecialchars($user['price']) . "</td>";
+            $html .= "<td>" . htmlspecialchars($user['product_info']) . "</td>";
+            $html .= "<td><form action=\"manageProduct.php\" method=\"post\" onsubmit=\"return confirmDelete();\">". ((($user['role'] === "admin")||($user['role'] === "root")) ? "" : "<input type=\"hidden\" name=\"deleteID\" value=\"".$user['PID']."\"><button type=\"submit\" value=\"ture\" name=\"del\" style=\"background-color: #ff4d4d; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; transition: background 0.3s ease;\">刪除商品</button></form></td>");
             $html .= "</tr>";
         }
         $html .= "</table>";
@@ -63,12 +61,68 @@
         if (($_SERVER['REQUEST_METHOD'] === "POST")&&(isset($_POST['deleteID']))){
             include "db_connection.php";
             $deleteUserID = $_POST['deleteID'];
-            $stmt = $db -> prepare("DELETE FROM `member` WHERE ID = :deleteID");
+            $stmt = $db -> prepare("DELETE FROM `product` WHERE PID = :deleteID");
             $stmt->bindParam(':deleteID', $deleteUserID);
             $stmt->execute();
-            header("location: manageAccount.php");
+            header("location: manageProduct.php");
         }
     ?>
+    <!--------------------------------- 以上為刪除product ------------------------------------>
+
+
+
+
+
+    <?php
+		include "db_connection.php";
+
+		if ($_SERVER['REQUEST_METHOD'] === "POST" && $_POST['upload']){
+
+			$product_name = $_POST['product_name']?? '';
+            $price = $_POST['price']?? '';
+            $product_info = $_POST['info']?? '';
+                
+            if (empty($product_name)) {
+				$errors .= "商品名稱不得為空\\n";
+			}
+			
+			if (empty($price)) {
+				$errors .= "商品價格不得為空\\n";
+			} elseif (!is_numeric($price) || $price <= 0) {
+                $errors .= "商品價格必須為正數\\n";
+            }
+        
+
+			if(empty($errors)){
+				$checkProduct = $db->prepare("SELECT COUNT(*) FROM product WHERE product_name = :product_name");
+				$checkProduct -> bindParam(':product_name', $product_name);
+				$checkProduct -> execute();
+
+				if($checkProduct->fetchColumn() > 0) $errors.= "商品名稱已經被註冊\\n";
+			}
+			
+				try {
+					$stmt = $db->prepare("INSERT INTO product (`product_name`, `price`, `product_info`) VALUES (:product_name, :price, :product_info)");
+                    $stmt->bindParam(':product_name', $product_name);
+                    $stmt->bindParam(':price', $price, PDO::PARAM_STR);
+                    $stmt->bindParam(':product_info', $product_info);
+					$stmt->execute();
+				
+					echo "<script>
+							alert('商品已成功上架');
+							setTimeout(function() {
+								window.location.href = 'manageProduct.php';
+							}, 0);
+						</script>";
+
+				} catch (PDOException $e) {
+					echo "資料庫錯誤: " . $e->getMessage();
+				}
+        }
+    
+	?>
+
+    <!--------------------------------- 以下為刪除product ------------------------------------>
     <style>
         table {
             width: 100%;        /* 表格寬度佔滿父元素 */
@@ -106,6 +160,7 @@
 
     </style>
 </head>
+    <!--------------------------------- 以上為刪除product ------------------------------------>
 
 <body>
     <div class="container-xxl bg-white p-0">
@@ -136,7 +191,7 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto py-0 pe-4">
                     <?php
-                        // 检查用户角色并生成相应的链接
+
                         if(isset($_SESSION['role']) && $_SESSION['role'] == "admin") {
                             echo '<a href="manageProduct.php" class="nav-item nav-link">管理商品</a>';
                             echo '<a href="manageAccount.php" class="nav-item nav-link">管理帳號</a>';
@@ -155,7 +210,7 @@
                 <div class="container my-5 py-5">
                     <div class="row align-items-center g-5">
                         <div class="col-lg-6 text-center text-lg-start">
-                            <h1 class="display-3 text-white animated slideInLeft">管理帳號</h1>
+                            <h1 class="display-3 text-white animated slideInLeft">管理商品</h1>
                         </div>
                         <div class="col-lg-6 text-center text-lg-end overflow-hidden">
                             <img class="img-fluid" src="var/www/html/dbProject/bootstrap-restaurant-template/img/cannabis_leaves_logo.png.png" alt="">
@@ -167,25 +222,34 @@
         <!-- Navbar & Hero End -->
         <?php echo $html; ?>
 
-
-<!-- Footer Start -->
-<!-- <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
-            <div class="container py-1">
-                    <div class="col-lg-3">
-                        <h4 class="section-title ff-secondary text-start text-primary fw-normal mb-4">Contact</h4>
-                        <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
-                        <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
-                        <p class="mb-2"><i class="fa fa-envelope me-3"></i>info@example.com</p>
-                        <div class="d-flex pt-2">
-                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-facebook-f"></i></a>
-                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-youtube"></i></a>
-                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-linkedin-in"></i></a>
+    <!--------------------------------- 以下為上架product ------------------------------------>
+        <body>
+            <div>
+            <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.5s">
+            <div class="bg-light rounded h-100 d-flex align-items-center p-5">
+                <form action="manageProduct.php" method="post" autocomplete="off">
+                    <div class="row g-3">
+                        <h1 class="mb-4">上架新商品</h1>
+                        <div class="col-12 col-sm-6">
+                            <input type="text" name="product_name" class="form-control border-0" placeholder="商品名稱" style="height: 55px;">
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <input type="text" name="price" class="form-control border-0" placeholder="商品價格" style="height: 55px;">
+                        </div>
+                        <div class="col-12 w-100 col-sm-6">
+                            <input type="text" name="info" class="form-control border-0" placeholder="商品描述/詳細資料" style="height: 55px;">
+                        </div>
+                        <!-- <div class="col-12">
+                        <input type="file" name="image" class="form-control border-0" accept="image/*" style="height: 55px;">                        <div class="col-12 w-100 col-sm-6">                        -->
+                            <button class="btn btn-primary w-100 py-3" type="submit" value="true" name="upload">上架商品</button>
                         </div>
                     </div>
+                </form>
+                </div>
                 </div>
             </div>
-        </div> -->
-        <!-- Footer End -->
+    <!--------------------------------- 以下為上架product ------------------------------------>
+
 
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
